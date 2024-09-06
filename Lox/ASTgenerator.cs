@@ -3,6 +3,7 @@ public class ASTgen : Expr.Visitor<string>
     public string Generate(Expr expr) => expr.Accept(this);
 
     //visitor methods for all
+    public string VisitAssignExpr(Expr.Assign expr) => Parenthesize("assign " + expr.name.ToString(), expr.value);
     public string VisitBinaryExpr(Expr.Binary expr) => Parenthesize(expr.Operator.lexeme, expr.Left, expr.Right);
     public string VisitGroupingExpr(Expr.Grouping expr) => Parenthesize("group", expr.Expression);
     public string VisitLiteralExpr(Expr.Literal expr) => expr.Value == null ? "nil" : expr.Value.ToString();
@@ -35,4 +36,10 @@ public class ASTgen : Expr.Visitor<string>
         Console.WriteLine(new ASTgen().Generate(expression));
         Console.WriteLine(new RPNgen().Generate(expression));
     }
-}
+
+    public string VisitVariableExpr(Expr.Variable expr)
+    {
+        throw new NotImplementedException();
+    }
+
+    }

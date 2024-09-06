@@ -7,6 +7,7 @@ public class Lox
     private static readonly Interpreter interpreter = new Interpreter();
     public static void Main(string[] args)
     {
+        Console.Clear();
         if (args.Length > 1)
         {
             Console.WriteLine("Usage: clox [script]");
@@ -57,10 +58,10 @@ public class Lox
         // printTokens(tokens);
 
         Parser parser = new(tokens);
-        Expr expression = parser.parse();
+        List<Stmt> statements = parser.parse();
 
         if (hadError) return;
-        interpreter.Interpret(expression);
+        interpreter.Interpret(statements);
         // Console.WriteLine(new ASTgen().Generate(expression));
     }
 
@@ -95,7 +96,7 @@ public class Lox
 
     public static void runtimeError(RuntimeError error)
     {
-        Console.WriteLine(error.Message + $"\n [Line {error.token.line} ]");
+        Console.WriteLine($"[Line {error.token.line} ]"+ "| Runtime error | " + error.Message);
         hadRuntimeError = true;
     }
 

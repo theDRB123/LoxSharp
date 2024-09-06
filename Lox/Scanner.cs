@@ -82,7 +82,7 @@ public class Scanner
         };
         if (type == INVALID)
         {
-            Lox.error(line, "Unexpected character");
+            Lox.error(line, "I can only eat ASCII you dum dum");
         }
         if (type != NULL)
         {
@@ -105,7 +105,7 @@ public class Scanner
             indentifier();
             return NULL;
         }
-        Lox.error(line, "Unexpected character");
+        Lox.error(line, "Wtf is this character dude");
         return INVALID;
     }
 
@@ -162,7 +162,7 @@ public class Scanner
 
         if (isAtTheEnd())
         {
-            Lox.error(line, "Unterminated string");
+            Lox.error(line, "Could you not atleast complete the string T_T");
             return NULL;
         }
 
