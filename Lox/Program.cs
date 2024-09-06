@@ -6,19 +6,20 @@ public class Lox
 
     public static void Main(string[] args)
     {
-        if (args.Length > 1)
-        {
-            Console.WriteLine("Usage: clox [script]");
-            Environment.Exit(0);
-        }
-        else if (args.Length == 1)
-        {
-            runFile(args[0]);
-        }
-        else
-        {
-            runPrompt();
-        }
+        // if (args.Length > 1)
+        // {
+        //     Console.WriteLine("Usage: clox [script]");
+        //     Environment.Exit(0);
+        // }
+        // else if (args.Length == 1)
+        // {
+        //     runFile(args[0]);
+        // }
+        // else
+        // {
+        //     runPrompt();
+        // }
+        ASTPrinter.run(null);
     }
 
     private static void runPrompt()

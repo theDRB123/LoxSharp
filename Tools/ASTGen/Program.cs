@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 
 public class Program
 {
@@ -26,36 +26,64 @@ public class Program
             writer.WriteLine("using System.Collections.Generic;");
             writer.WriteLine();
             writer.WriteLine("public abstract class " + baseName + "\n {");
+
+            defineVisitor(writer, baseName, types);
+
             foreach (var type in types)
             {
                 string className = type.Split(':')[0].Trim();
                 string fields = type.Split(':')[1].Trim();
                 defineType(writer, baseName, className, fields);
             }
+
+            writer.WriteLine("");
+            writer.WriteLine("public abstract T Accept<T>(Visitor<T> visitor);");
+
+
             writer.WriteLine("}");
             writer.Close();
         }
     }
 
+    private static void defineVisitor(StreamWriter writer, string baseName, List<string> types)
+    {
+        writer.WriteLine("public interface Visitor<T> \n{");
+
+        foreach(string type in types){
+            string typename = type.Split(':')[0].Trim();
+            writer.WriteLine("      T Visit" + typename + baseName + "(" + typename + " " + baseName.ToLower()+ ");");
+
+        }
+
+        writer.WriteLine(" }");
+    }
 
     private static void defineType(StreamWriter writer, string baseName, string className, string fieldList)
     {
-        writer.WriteLine("class " + className + " : " + baseName + "\n {");
+        writer.WriteLine("public class " + className + " : " + baseName + "\n {");
 
         writer.WriteLine("");
         string[] fields = fieldList.Split(',').Select(s => s.Trim()).ToArray();
         foreach (var field in fields)
         {
-            writer.WriteLine("readonly " + field + ";");
+            writer.WriteLine("public readonly " + field + ";");
         }
 
-        writer.WriteLine(" " + className + "(" + fieldList + ") \n {");
-
+        writer.WriteLine("public " + className + "(" + fieldList + ") \n {");
+        
         foreach (var field in fields)
         {
             var name = field.Split(' ')[1];
             writer.WriteLine("      this." + name + " = " + name + ";");
         }
-        writer.WriteLine("   } \n }");
+        writer.WriteLine("}");
+
+        writer.WriteLine("public override T Accept<T> (Visitor<T> visitor) \n{");
+        writer.WriteLine("      return visitor.Visit" + className + baseName + "(this);");
+        writer.WriteLine("}");
+
+       
+        
+        writer.WriteLine("}");
     }
 }
