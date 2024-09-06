@@ -19,7 +19,8 @@ public class Lox
         // {
         //     runPrompt();
         // }
-        ASTPrinter.run(null);
+        ASTgen.test(null);
+
     }
 
     private static void runPrompt()
@@ -63,6 +64,7 @@ public class Lox
     {
         Console.Error.WriteLine("[line => " + line + "] | Error => " + message);
         hadError = true;
+
     }
 }
 
