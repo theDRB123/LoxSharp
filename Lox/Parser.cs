@@ -2,6 +2,27 @@ using System.Linq.Expressions;
 using System.Reflection.Metadata;
 using System.Text.RegularExpressions;
 using static TokenType;
+
+//DEFINED GRAMMAR
+/* 
+expression → equality ;
+equality   → comparison ( ( "!=" | "==" ) comparison )* ;
+comparison → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
+term       → factor ( ( "-" | "+" ) factor )* ;
+factor     → unary ( ( "/" | "*" ) unary )* ;
+unary      → ( "!" | "-" | "--" | "++" ) unary
+           | postfix ;
+postfix    → primary ( "--" | ++" )* ;
+primary    → NUMBER | STRING | "true" | "false" | "nil"
+           | "(" expression ")"
+           --- Error productions... ---
+           | ( "!=" | "==" ) equality
+           | ( ">" | ">=" | "<" | "<=" ) comparison
+           | ( "+" ) term
+           | ( "/" | "*" ) factor ;
+*/
+
+
 public class Parser
 {
     public class ParseError : Exception { }
@@ -13,10 +34,14 @@ public class Parser
         this.tokens = tokens;
     }
 
-    public Expr parse(){
-        try {
+    public Expr parse()
+    {
+        try
+        {
             return expression();
-        } catch (ParseError error){
+        }
+        catch (ParseError error)
+        {
             return null;
         }
     }
@@ -34,7 +59,8 @@ public class Parser
     {
         Expr expr = equality();
 
-        if(match(QUESTION)){
+        if (match(QUESTION))
+        {
             Expr thenBranch = expression();
             consume(COLON, "Expected ':' after ternary operator");
             Expr elseBranch = conditional();
@@ -116,6 +142,32 @@ public class Parser
             consume(RIGHT_PAREN, "Expected ')' after expressions");
             return new Expr.Grouping(expr);
         }
+        //error productions 
+        if (match(BANG_EQUAL, EQUAL_EQUAL))
+        {
+            error(previous(), "Missing left-hand operand");
+            equality();
+            return null;
+        }
+        if (match(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL))
+        {
+            error(previous(), "Missing left-hand operand");
+            comparision();
+            return null;
+        }
+        if (match(PLUS))
+        {
+            error(previous(), "Missing left-hand operand");
+            comparision();
+            return null;
+        }
+        if (match(SLASH, STAR))
+        {
+            error(previous(), "Missing left-hand operand");
+            factor();
+            return null;
+        }
+                
         return new Expr.Literal(advance().type switch
         {
             NUMBER => previous().literal,

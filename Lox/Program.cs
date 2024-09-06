@@ -3,7 +3,8 @@
 public class Lox
 {
     private static bool hadError;
-
+    private static bool hadRuntimeError;
+    private static readonly Interpreter interpreter = new Interpreter();
     public static void Main(string[] args)
     {
         if (args.Length > 1)
@@ -27,8 +28,12 @@ public class Lox
         while (true)
         {
             Console.Write("--> ");
-            string? line = Console.ReadLine();
-            if (line == null) break;
+            string line = Console.ReadLine();
+            if (line == "")
+            {
+                Console.WriteLine("Empty line");
+                continue;
+            }
             run(line);
             hadError = false;
         }
@@ -38,21 +43,25 @@ public class Lox
     {
         byte[] bytes = File.ReadAllBytes(path);
         run(bytes.ToString());
+
+        if (hadError) Environment.Exit(65);
+        if (hadRuntimeError) Environment.Exit(70);
     }
 
-    private static void run(string? source)
+    private static void run(string source)
     {
         Scanner scanner = new(source);
 
         if (hadError) Environment.Exit(65);
         List<Token> tokens = scanner.scanTokens();
-        printTokens(tokens);
+        // printTokens(tokens);
 
         Parser parser = new(tokens);
         Expr expression = parser.parse();
 
         if (hadError) return;
-        Console.WriteLine(new ASTgen().Generate(expression));
+        interpreter.Interpret(expression);
+        // Console.WriteLine(new ASTgen().Generate(expression));
     }
 
     private static void printTokens(List<Token> tokens)
@@ -65,10 +74,14 @@ public class Lox
         report(line, "", message);
     }
 
-    public static void error(Token token, string message){
-        if (token.type == TokenType.EOF){
+    public static void error(Token token, string message)
+    {
+        if (token.type == TokenType.EOF)
+        {
             report(token.line, " at end", message);
-        } else {
+        }
+        else
+        {
             report(token.line, " at '" + token.lexeme + "'", message);
         }
     }
@@ -79,6 +92,13 @@ public class Lox
         hadError = true;
 
     }
+
+    public static void runtimeError(RuntimeError error)
+    {
+        Console.WriteLine(error.Message + $"\n [Line {error.token.line} ]");
+        hadRuntimeError = true;
+    }
+
 }
 
 
