@@ -248,5 +248,10 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<object>
         return null;
     }
 
-
+    public object VisitWhileStmt(Stmt.While stmt){
+        while(isTruty(evaluate(stmt.condition))){
+            execute(stmt.body);
+        }
+        return null;
+    }
 }

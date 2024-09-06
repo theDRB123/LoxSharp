@@ -76,6 +76,13 @@ public class Parser
         {
             return ifStatement();
         }
+        if (match(WHILE))
+        {
+            return whileStatement();
+        }
+        if (match(FOR)){
+            return forStatement();
+        }
         return expressionStatement();
     }
 
@@ -117,11 +124,58 @@ public class Parser
         Stmt thenBranch = statement();
         Stmt elseBranch = null;
 
-        if(match(ELSE)){
+        if (match(ELSE))
+        {
             elseBranch = statement();
         }
 
         return new Stmt.If(condition, thenBranch, elseBranch);
+    }
+    private Stmt whileStatement()
+    {
+        consume(LEFT_PAREN, "Oh shit, here we go again!! You forgot the '(' in the while idiot");
+        Expr condition = expression();
+        consume(RIGHT_PAREN, "You should rot in hell, you forgot the ')' here !!");
+
+        Stmt body = statement();
+        return new Stmt.While(condition, body);
+    }
+
+    private Stmt forStatement(){
+        consume(LEFT_PAREN, "Uhm, I think you need to have a '(' in For loop");
+
+        Stmt inititializer;
+        if(match(SEMICOLON)){
+            inititializer = null;
+        } else if(match(VAR)){
+            inititializer = varDeclaration();
+        } else {
+            inititializer = expressionStatement();
+        }
+
+        Expr condition = null;
+        if(!check(SEMICOLON)){
+            condition = expression();
+        }
+        consume(SEMICOLON, "HEY YOU!! Put a ';' after the loop condition");
+
+        Expr increment = null;
+        if(!check(RIGHT_PAREN)){
+            increment = expression();
+        }
+        consume(RIGHT_PAREN, "Close the for loop with ')' please");
+
+        Stmt body = statement();
+        if(increment != null){
+            body = new Stmt.Block([body, new Stmt.Expression(increment)]);
+        }
+        if(condition != null){
+            body = new Stmt.While(condition, body);
+        }
+        if(inititializer != null){
+            body = new Stmt.Block([inititializer, body]);
+        }
+        return body;
     }
 
     //expression methods
@@ -155,7 +209,8 @@ public class Parser
     {
         Expr expr = and();
 
-        while(match(OR)){
+        while (match(OR))
+        {
             Token Operator = previous();
             Expr right = and();
             expr = new Expr.Logical(expr, Operator, right);
@@ -168,7 +223,8 @@ public class Parser
     {
         Expr expr = conditional();
 
-        while(match(AND)){
+        while (match(AND))
+        {
             Token Operator = previous();
             Expr right = conditional();
             expr = new Expr.Logical(expr, Operator, right);

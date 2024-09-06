@@ -9,6 +9,7 @@ public interface Visitor<T>
       T VisitPrintStmt(Print stmt);
       T VisitVarStmt(Var stmt);
       T VisitIfStmt(If stmt);
+      T VisitWhileStmt(While stmt);
  }
 public class Block : Stmt
  {
@@ -79,6 +80,21 @@ public If(Expr condition, Stmt thenBranch, Stmt elseBranch)
 public override T Accept<T> (Visitor<T> visitor) 
 {
       return visitor.VisitIfStmt(this);
+}
+}
+public class While : Stmt
+ {
+
+public readonly Expr condition;
+public readonly Stmt body;
+public While(Expr condition, Stmt body) 
+ {
+      this.condition = condition;
+      this.body = body;
+}
+public override T Accept<T> (Visitor<T> visitor) 
+{
+      return visitor.VisitWhileStmt(this);
 }
 }
 
