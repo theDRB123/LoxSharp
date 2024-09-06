@@ -83,6 +83,9 @@ public class Parser
         if (match(FOR)){
             return forStatement();
         }
+        if (match(BREAK)){
+            return breakStatement();
+        }
         return expressionStatement();
     }
 
@@ -176,6 +179,12 @@ public class Parser
             body = new Stmt.Block([inititializer, body]);
         }
         return body;
+    }
+
+    private Stmt breakStatement(){
+        var token = previous();
+        consume(SEMICOLON, "HEY YOU !!, put a semicolon here !!");
+        return new Stmt.Break(token);
     }
 
     //expression methods

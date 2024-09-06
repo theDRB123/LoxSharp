@@ -4,18 +4,19 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<object>
 {
     public bool isREPL = false;
     private Env environment = new();
+    private bool breakFlag = false;
     public void Interpret(List<Stmt> statements)
     {
-        try
+        foreach (var stmt in statements)
         {
-            foreach (var stmt in statements)
+            try
             {
                 execute(stmt);
             }
-        }
-        catch (RuntimeError error)
-        {
-            Lox.runtimeError(error);
+            catch (RuntimeError error)
+            {
+                Lox.runtimeError(error);
+            }
         }
     }
 
@@ -28,12 +29,17 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<object>
 
             foreach (var statement in statements)
             {
+                if (breakFlag)
+                {
+                    break;
+                }
                 execute(statement);
             }
         }
-        catch (Exception err)
+        catch (RuntimeError err)
         {
-
+            ThrowRuntimeError(err.token, "Skipping Block | " + err.Message);
+            breakFlag = true;
         }
         finally
         {
@@ -88,9 +94,9 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<object>
         object output = expr.Operator.type switch
         {
             MINUS => check ? (double)left - (double)right : null,
-            SLASH => check ? handleDivisionOperator(left, right) : null,
+            SLASH => check ? handleDivisionOperator(left, right, expr.Operator) : null,
             STAR => check ? (double)left * (double)right : null,
-            PLUS => handleArithmaticOperator(left, right),
+            PLUS => handleArithmaticOperator(left, right, expr.Operator),
 
 
             GREATER => check ? (double)left > (double)right : handleStringComparison(left, right, expr.Operator),
@@ -105,11 +111,11 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<object>
         return output ?? ThrowRuntimeError(Operator);
     }
 
-    private object handleDivisionOperator(object left, object right)
+    private object handleDivisionOperator(object left, object right, Token Operator)
     {
         if ((double)right == 0)
         {
-            ThrowRuntimeError(new Token(SLASH, "/", null, 0), "PANIC PANIC PANIC !! division by zero detected");
+            ThrowRuntimeError(Operator, "PANIC PANIC PANIC !! division by zero detected");
         }
         return (double)left / (double)right;
     }
@@ -138,7 +144,7 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<object>
         return left.Equals(right);
     }
 
-    private object handleArithmaticOperator(object left, object right)
+    private object handleArithmaticOperator(object left, object right, Token Operator)
     {
         if (left is double && right is double)
         {
@@ -255,9 +261,24 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<object>
 
     public object VisitWhileStmt(Stmt.While stmt)
     {
-        while (isTruty(evaluate(stmt.condition)))
+        while (!breakFlag && isTruty(evaluate(stmt.condition)))
         {
             execute(stmt.body);
+        }
+        breakFlag = false;
+        return null;
+    }
+
+    public object VisitBreakStmt(Stmt.Break stmt)
+    {
+        if (stmt.type.type == BREAK)
+        {
+            if (environment.enclosing == null)
+            {
+                ThrowRuntimeError(stmt.type, "you need a loop to have a break ~sun tzu!!");
+                return null;
+            }
+            breakFlag = true;
         }
         return null;
     }

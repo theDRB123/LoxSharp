@@ -44,6 +44,7 @@ public class Lox
     private static void runFile(string path)
     {
         string content = File.ReadAllText(path);
+        // Console.WriteLine(content);
         run(content);
         if (hadError) Environment.Exit(65);
         if (hadRuntimeError) Environment.Exit(70);

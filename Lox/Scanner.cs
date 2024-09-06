@@ -26,7 +26,8 @@ public class Scanner
         { "this", THIS },
         { "true", TRUE },
         { "var", VAR },
-        { "while", WHILE }
+        { "while", WHILE },
+        { "break", BREAK}
     };
 
     private int start = 0;

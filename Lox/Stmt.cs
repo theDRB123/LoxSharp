@@ -10,6 +10,7 @@ public interface Visitor<T>
       T VisitVarStmt(Var stmt);
       T VisitIfStmt(If stmt);
       T VisitWhileStmt(While stmt);
+      T VisitBreakStmt(Break stmt);
  }
 public class Block : Stmt
  {
@@ -95,6 +96,19 @@ public While(Expr condition, Stmt body)
 public override T Accept<T> (Visitor<T> visitor) 
 {
       return visitor.VisitWhileStmt(this);
+}
+}
+public class Break : Stmt
+ {
+
+public readonly Token type;
+public Break(Token type) 
+ {
+      this.type = type;
+}
+public override T Accept<T> (Visitor<T> visitor) 
+{
+      return visitor.VisitBreakStmt(this);
 }
 }
 

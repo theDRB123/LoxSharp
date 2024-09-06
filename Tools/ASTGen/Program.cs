@@ -11,23 +11,24 @@ public class Program
         }
         string output_dir = args[0];
         defineAST(output_dir, "Expr", [
-	    "Assign   	: Token name, Expr value",
+        "Assign   	: Token name, Expr value",
             "Binary   	: Expr Left,Token Operator,Expr Right",
             "Grouping 	: Expr Expression",
             "Literal  	: Object Value",
             "Unary    	: Token Operator, Expr right",
-	    "Logical  	: Expr left, Token Operator, Expr right", 
+        "Logical  	: Expr left, Token Operator, Expr right",
             "Conditional: Expr expr , Expr thenBranch, Expr elseBranch",
             "Variable 	: Token name"
         ]);
 
         defineAST(output_dir, "Stmt", [
-	    "Block 	: List<Stmt> statements",
+        "Block 	: List<Stmt> statements",
             "Expression : Expr expression",
             "Print      : Expr expression",
-	    "Var	: Token name, Expr initializer",
-	    "If 	: Expr condition, Stmt thenBranch, Stmt elseBranch",
-	    "While	: Expr condition, Stmt body",
+        "Var	: Token name, Expr initializer",
+        "If 	: Expr condition, Stmt thenBranch, Stmt elseBranch",
+        "While	: Expr condition, Stmt body",
+        "Break  : Token type"
         ]);
     }
 
@@ -62,9 +63,10 @@ public class Program
     {
         writer.WriteLine("public interface Visitor<T> \n{");
 
-        foreach(string type in types){
+        foreach (string type in types)
+        {
             string typename = type.Split(':')[0].Trim();
-            writer.WriteLine("      T Visit" + typename + baseName + "(" + typename + " " + baseName.ToLower()+ ");");
+            writer.WriteLine("      T Visit" + typename + baseName + "(" + typename + " " + baseName.ToLower() + ");");
 
         }
 
@@ -83,7 +85,7 @@ public class Program
         }
 
         writer.WriteLine("public " + className + "(" + fieldList + ") \n {");
-        
+
         foreach (var field in fields)
         {
             var name = field.Split(' ')[1];
@@ -95,8 +97,8 @@ public class Program
         writer.WriteLine("      return visitor.Visit" + className + baseName + "(this);");
         writer.WriteLine("}");
 
-       
-        
+
+
         writer.WriteLine("}");
     }
 }

@@ -9,6 +9,6 @@ public class Token(TokenType type, string lexeme, object literal, int line)
 
     public string toString()
     {
-        return type + " " + lexeme + " " + literal;
+        return type + " " + lexeme + " " + literal + " line -> " + line;
     }
 }
