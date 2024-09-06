@@ -4,7 +4,7 @@ public class Lox
 {
     private static bool hadError;
     private static bool hadRuntimeError;
-    private static readonly Interpreter interpreter = new Interpreter();
+    private static readonly Interpreter interpreter = new();
     public static void Main(string[] args)
     {
         Console.Clear();
@@ -26,6 +26,7 @@ public class Lox
 
     private static void runPrompt()
     {
+        interpreter.isREPL = true;
         while (true)
         {
             Console.Write("--> ");
@@ -42,9 +43,8 @@ public class Lox
 
     private static void runFile(string path)
     {
-        byte[] bytes = File.ReadAllBytes(path);
-        run(bytes.ToString());
-
+        string content = File.ReadAllText(path);
+        run(content);
         if (hadError) Environment.Exit(65);
         if (hadRuntimeError) Environment.Exit(70);
     }
@@ -96,7 +96,7 @@ public class Lox
 
     public static void runtimeError(RuntimeError error)
     {
-        Console.WriteLine($"[Line {error.token.line} ]"+ "| Runtime error | " + error.Message);
+        Console.WriteLine($"[Line {error.token.line} ]" + "| Runtime error | " + error.Message);
         hadRuntimeError = true;
     }
 

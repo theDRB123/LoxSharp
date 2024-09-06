@@ -42,4 +42,8 @@ public class ASTgen : Expr.Visitor<string>
         throw new NotImplementedException();
     }
 
+    public string VisitLogicalExpr(Expr.Logical expr)
+    {
+        throw new NotImplementedException();
     }
+}

@@ -68,17 +68,24 @@ public class Parser
         {
             return printStatement();
         }
-        if (match(LEFT_BRACE)){
+        if (match(LEFT_BRACE))
+        {
             return new Stmt.Block(block());
+        }
+        if (match(IF))
+        {
+            return ifStatement();
         }
         return expressionStatement();
     }
+
 
     private List<Stmt> block()
     {
         List<Stmt> statements = [];
 
-        while(!check(RIGHT_BRACE) && !isAtEnd()){
+        while (!check(RIGHT_BRACE) && !isAtEnd())
+        {
             statements.Add(declaration());
         }
 
@@ -101,6 +108,21 @@ public class Parser
         return new Stmt.Print(value);
     }
 
+    private Stmt ifStatement()
+    {
+        consume(LEFT_PAREN, "You gotta put the '(' in the if statement bud");
+        Expr condition = expression();
+        consume(RIGHT_PAREN, "You gotta end the if with a ')' bud");
+
+        Stmt thenBranch = statement();
+        Stmt elseBranch = null;
+
+        if(match(ELSE)){
+            elseBranch = statement();
+        }
+
+        return new Stmt.If(condition, thenBranch, elseBranch);
+    }
 
     //expression methods
     private Expr expression()
@@ -108,19 +130,48 @@ public class Parser
         return assignment();
     }
 
-    private Expr assignment(){
-        Expr expr = conditional();
+    private Expr assignment()
+    {
+        Expr expr = or();
 
-        if(match(EQUAL)){
+        if (match(EQUAL))
+        {
             Token equals = previous();
             Expr value = assignment();
 
-            if (expr is Expr.Variable){
+            if (expr is Expr.Variable)
+            {
                 Token name = ((Expr.Variable)expr).name;
                 return new Expr.Assign(name, value);
             }
 
             LoxErrors.ThrowParseError(equals, "I think a sane person assigns something to a variable");
+        }
+
+        return expr;
+    }
+
+    private Expr or()
+    {
+        Expr expr = and();
+
+        while(match(OR)){
+            Token Operator = previous();
+            Expr right = and();
+            expr = new Expr.Logical(expr, Operator, right);
+        }
+
+        return expr;
+    }
+
+    private Expr and()
+    {
+        Expr expr = conditional();
+
+        while(match(AND)){
+            Token Operator = previous();
+            Expr right = conditional();
+            expr = new Expr.Logical(expr, Operator, right);
         }
 
         return expr;
@@ -290,7 +341,7 @@ public class Parser
         LoxErrors.ThrowParseError(peek(), message);
         return null;
     }
-    
+
     private void synchronize()
     {
         advance();

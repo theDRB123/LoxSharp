@@ -9,6 +9,7 @@ public interface Visitor<T>
       T VisitGroupingExpr(Grouping expr);
       T VisitLiteralExpr(Literal expr);
       T VisitUnaryExpr(Unary expr);
+      T VisitLogicalExpr(Logical expr);
       T VisitConditionalExpr(Conditional expr);
       T VisitVariableExpr(Variable expr);
  }
@@ -83,6 +84,23 @@ public Unary(Token Operator, Expr right)
 public override T Accept<T> (Visitor<T> visitor) 
 {
       return visitor.VisitUnaryExpr(this);
+}
+}
+public class Logical : Expr
+ {
+
+public readonly Expr left;
+public readonly Token Operator;
+public readonly Expr right;
+public Logical(Expr left, Token Operator, Expr right) 
+ {
+      this.left = left;
+      this.Operator = Operator;
+      this.right = right;
+}
+public override T Accept<T> (Visitor<T> visitor) 
+{
+      return visitor.VisitLogicalExpr(this);
 }
 }
 public class Conditional : Expr

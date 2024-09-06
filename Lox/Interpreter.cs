@@ -1,10 +1,8 @@
-using System.Linq.Expressions;
-using System.Net.Mail;
-using System.Reflection.Metadata.Ecma335;
 using static TokenType;
 using static LoxErrors;
 public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<object>
 {
+    public bool isREPL = false;
     private Env environment = new();
     public void Interpret(List<Stmt> statements)
     {
@@ -21,21 +19,28 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<object>
         }
     }
 
-    private void executeBlock(List<Stmt> statements, Env env){
+    private void executeBlock(List<Stmt> statements, Env env)
+    {
         Env previous = this.environment;
-        try{
+        try
+        {
             environment = env;
 
-            foreach(var statement in statements){
+            foreach (var statement in statements)
+            {
                 execute(statement);
             }
-        } catch(Exception err){
+        }
+        catch (Exception err)
+        {
 
-        } finally {
+        }
+        finally
+        {
             environment = previous;
         }
     }
-    
+
     private void execute(Stmt stmt)
     {
         stmt.Accept(this);
@@ -44,7 +49,7 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<object>
 
     private object stringify(object value)
     {
-        if (value == null) return "nil";
+        if (value == null) return null;
 
         if (value is double)
         {
@@ -58,6 +63,18 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<object>
         object value = evaluate(expr.value);
         environment.Assign(expr.name, value);
         return value;
+    }
+    public object VisitLogicalExpr(Expr.Logical expr)
+    {
+        object left = evaluate(expr.left);
+
+        if(expr.Operator.type == OR){
+            if (isTruty(left)) return left;
+        }else{
+            if (!isTruty(left)) return left;
+        }
+
+        return evaluate(expr.right);
     }
     public object VisitBinaryExpr(Expr.Binary expr)
     {
@@ -165,7 +182,10 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<object>
 
         return output ?? ThrowRuntimeError(expr.Operator);
     }
-
+    public object VisitVariableExpr(Expr.Variable expr)
+    {
+        return stringify(environment.Get(expr.name));
+    }
     private bool checkOperand(object right) => right is double;
     private bool checkOperands(object Left, object Right) => Left is double && Right is double;
 
@@ -180,28 +200,27 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<object>
 
 
 
-
     //Statements
-    public object VisitBlockStmt(Stmt.Block stmt){
+    public object VisitBlockStmt(Stmt.Block stmt)
+    {
         executeBlock(stmt.statements, new Env(environment));
         return null;
     }
     public object VisitExpressionStmt(Stmt.Expression stmt)
     {
-        evaluate(stmt.expression);
+        object value = evaluate(stmt.expression);
+        if (isREPL)
+        {
+            Console.WriteLine(value);
+        }
         return null;
     }
 
     public object VisitPrintStmt(Stmt.Print stmt)
     {
         object value = evaluate(stmt.expression);
-        Console.WriteLine(value);
+        Console.WriteLine(value??"nil");
         return null;
-    }
-
-    public object VisitVariableExpr(Expr.Variable expr)
-    {
-        return stringify(environment.Get(expr.name));
     }
 
     public object VisitVarStmt(Stmt.Var stmt)
@@ -215,4 +234,19 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<object>
         environment.Define(stmt.name.lexeme, value);
         return null;
     }
+
+    public object VisitIfStmt(Stmt.If stmt)
+    {
+        if (isTruty(evaluate(stmt.condition)))
+        {
+            execute(stmt.thenBranch);
+        }
+        else
+        {
+            execute(stmt.elseBranch);
+        }
+        return null;
+    }
+
+
 }

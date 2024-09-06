@@ -11,20 +11,22 @@ public class Program
         }
         string output_dir = args[0];
         defineAST(output_dir, "Expr", [
-	    "Assign   : Token name, Expr value",
-            "Binary   : Expr Left,Token Operator,Expr Right",
-            "Grouping : Expr Expression",
-            "Literal  : Object Value",
-            "Unary    : Token Operator, Expr right",
-            "Conditional : Expr expr , Expr thenBranch, Expr elseBranch",
-            "Variable : Token name"
+	    "Assign   	: Token name, Expr value",
+            "Binary   	: Expr Left,Token Operator,Expr Right",
+            "Grouping 	: Expr Expression",
+            "Literal  	: Object Value",
+            "Unary    	: Token Operator, Expr right",
+	    "Logical  	: Expr left, Token Operator, Expr right", 
+            "Conditional: Expr expr , Expr thenBranch, Expr elseBranch",
+            "Variable 	: Token name"
         ]);
 
         defineAST(output_dir, "Stmt", [
 	    "Block 	: List<Stmt> statements",
             "Expression : Expr expression",
             "Print      : Expr expression",
-	        "Var	    : Token name, Expr initializer",
+	    "Var	: Token name, Expr initializer",
+	    "If 	: Expr condition, Stmt thenBranch, Stmt elseBranch",
         ]);
     }
 
