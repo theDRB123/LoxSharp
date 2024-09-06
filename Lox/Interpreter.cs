@@ -44,7 +44,6 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<object>
     private void execute(Stmt stmt)
     {
         stmt.Accept(this);
-
     }
 
     private object stringify(object value)
@@ -68,9 +67,12 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<object>
     {
         object left = evaluate(expr.left);
 
-        if(expr.Operator.type == OR){
+        if (expr.Operator.type == OR)
+        {
             if (isTruty(left)) return left;
-        }else{
+        }
+        else
+        {
             if (!isTruty(left)) return left;
         }
 
@@ -219,7 +221,7 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<object>
     public object VisitPrintStmt(Stmt.Print stmt)
     {
         object value = evaluate(stmt.expression);
-        Console.WriteLine(value??"nil");
+        Console.WriteLine(value ?? "nil");
         return null;
     }
 
@@ -243,13 +245,18 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<object>
         }
         else
         {
-            execute(stmt.elseBranch);
+            if (stmt.elseBranch != null)
+            {
+                execute(stmt.elseBranch);
+            }
         }
         return null;
     }
 
-    public object VisitWhileStmt(Stmt.While stmt){
-        while(isTruty(evaluate(stmt.condition))){
+    public object VisitWhileStmt(Stmt.While stmt)
+    {
+        while (isTruty(evaluate(stmt.condition)))
+        {
             execute(stmt.body);
         }
         return null;
