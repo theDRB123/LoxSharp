@@ -1,6 +1,6 @@
 public class ASTgen : Expr.Visitor<string>
 {
-    string Generate(Expr expr) => expr.Accept(this);
+    public string Generate(Expr expr) => expr.Accept(this);
 
     //visitor methods for all
     public string VisitBinaryExpr(Expr.Binary expr) => Parenthesize(expr.Operator.lexeme, expr.Left, expr.Right);
@@ -15,12 +15,6 @@ public class ASTgen : Expr.Visitor<string>
 
     public static void test(string[] args)
     {
-        // Expr expression = new Expr.Binary(
-        //     new Expr.Unary(new Token(TokenType.MINUS, "-", null, 1), new Expr.Literal(123)),
-        //     new Token(TokenType.STAR, "*", null, 1),
-        //     new Expr.Grouping(new Expr.Literal(56.334))
-        // );
-
         Expr expression = new Expr.Binary(
             new Expr.Grouping(
                 new Expr.Binary(

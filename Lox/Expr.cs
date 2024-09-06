@@ -42,8 +42,8 @@ public abstract class Expr
       public class Literal : Expr
       {
 
-            public readonly Object Value;
-            public Literal(Object Value)
+            public readonly Object? Value;
+            public Literal(Object? Value)
             {
                   this.Value = Value;
             }
