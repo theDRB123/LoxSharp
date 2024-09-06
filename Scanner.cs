@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using static TokenType;
@@ -67,7 +68,7 @@ public class Scanner
             '=' => match('=') ? EQUAL_EQUAL : EQUAL,
             '<' => match('=') ? LESS_EQUAL : LESS,
             '>' => match('=') ? GREATER_EQUAL : GREATER,
-            '/' => match('/') ? Comment() : SLASH,
+            '/' => Comment() ? NULL : SLASH,
             ' ' => NULL,
             '\r' => NULL,
             '\t' => NULL,
@@ -87,6 +88,8 @@ public class Scanner
         }
 
     }
+
+
 
     private TokenType handleDefault(char c)
     {
@@ -173,13 +176,79 @@ public class Scanner
         line++;
         return NULL;
     }
-    private TokenType Comment()
+    private bool Comment()
     {
-        while (peek() != '\n' && !isAtTheEnd())
+        if (CommentBlock())
         {
-            advance();
+            return true;
         }
-        return NULL;
+        if (CommentLine())
+        {
+            return true;
+        }
+        return false;
+
+    }
+
+    private bool CommentBlock()
+    {
+        if (match('*'))
+        {
+            while (true)
+            {
+                if (isAtTheEnd())
+                {
+                    Lox.error(line, "Comment not terminated");
+                    return true;
+                }
+                char next = advance();
+                switch (next)
+                {   
+                    case '/':
+                        advance();
+                        if(CommentBlock()){
+                            continue;
+                        };
+                        break;
+                    case '*':
+                        
+                    default:
+                        break;
+                }
+                if (peek() == '/')
+                {
+                    advance();
+                    if(CommentBlock())
+                    {
+                        continue;
+                    };
+                }
+
+                if (peek() == '*')
+                {
+                    advance();
+                    if (peek() == '/')
+                    {
+                        advance();
+                        break;
+                    }
+                }
+                advance();
+            }
+            return true;
+        }
+        return false;
+    }
+    private bool CommentLine()
+    {
+        if (match('/'))
+        {
+            while (peek() != '\n' && !isAtTheEnd())
+            {
+                advance();
+            }
+        }
+        return false;
     }
 
     private char peek()
