@@ -64,6 +64,8 @@ public class Scanner
             '+' => PLUS,
             ';' => SEMICOLON,
             '*' => STAR,
+            '?' => QUESTION,
+            ':' => COLON,
             '!' => match('=') ? BANG_EQUAL : BANG,
             '=' => match('=') ? EQUAL_EQUAL : EQUAL,
             '<' => match('=') ? LESS_EQUAL : LESS,

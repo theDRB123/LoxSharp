@@ -7,8 +7,7 @@ public class ASTgen : Expr.Visitor<string>
     public string VisitGroupingExpr(Expr.Grouping expr) => Parenthesize("group", expr.Expression);
     public string VisitLiteralExpr(Expr.Literal expr) => expr.Value == null ? "nil" : expr.Value.ToString();
     public string VisitUnaryExpr(Expr.Unary expr) => Parenthesize(expr.Operator.lexeme, expr.right);
-
-
+    public string VisitConditionalExpr(Expr.Conditional expr) => Parenthesize("if", expr.expr, expr.thenBranch, expr.elseBranch);
 
     public string Parenthesize(string name, params Expr[] exprs)
     => "(" + name + string.Join("", exprs.Select((expr) => " " + expr.Accept(this))) + ")";

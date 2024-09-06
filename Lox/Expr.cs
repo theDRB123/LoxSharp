@@ -8,6 +8,7 @@ public abstract class Expr
             T VisitGroupingExpr(Grouping expr);
             T VisitLiteralExpr(Literal expr);
             T VisitUnaryExpr(Unary expr);
+            T VisitConditionalExpr(Conditional conditional);
       }
       public class Binary : Expr
       {
@@ -66,6 +67,26 @@ public abstract class Expr
             {
                   return visitor.VisitUnaryExpr(this);
             }
+      }
+
+      public class Conditional : Expr
+      {
+            public readonly Expr expr;
+            public readonly Expr thenBranch;
+            public readonly Expr elseBranch;
+
+            public Conditional(Expr expr, Expr thenBranch, Expr elseBranch)
+            {
+                  this.expr = expr;
+                  this.thenBranch = thenBranch;
+                  this.elseBranch = elseBranch;
+            }
+
+            public override T Accept<T>(Visitor<T> visitor)
+            {
+                  return visitor.VisitConditionalExpr(this);
+            }
+
       }
 
       public abstract T Accept<T>(Visitor<T> visitor);

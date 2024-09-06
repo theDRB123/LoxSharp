@@ -21,9 +21,26 @@ public class Parser
         }
     }
 
+
+    // expression -> conditional
+    // conditional -> equality ( "?" expression ":" conditional )? ;
+
     private Expr expression()
     {
-        return equality();
+        return conditional();
+    }
+
+    private Expr conditional()
+    {
+        Expr expr = equality();
+
+        if(match(QUESTION)){
+            Expr thenBranch = expression();
+            consume(COLON, "Expected ':' after ternary operator");
+            Expr elseBranch = conditional();
+            expr = new Expr.Conditional(expr, thenBranch, elseBranch);
+        }
+        return expr;
     }
 
     private Expr equality()

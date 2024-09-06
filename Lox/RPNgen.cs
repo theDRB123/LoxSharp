@@ -6,6 +6,7 @@ public class RPNgen : Expr.Visitor<string>
     public string VisitGroupingExpr(Expr.Grouping expr) => helper(expr.Expression);
     public string VisitLiteralExpr(Expr.Literal expr) => expr.Value.ToString();
     public string VisitUnaryExpr(Expr.Unary expr) => helper(expr.right) + expr.Operator.lexeme;
+    public string VisitConditionalExpr(Expr.Conditional expr) => "if" + helper(expr.expr) + " then " + helper(expr.thenBranch) + " else " + helper(expr.elseBranch);
     public string Generate(Expr expr) => expr.Accept<string>(this);
 
     public string helper(params Expr[] exprs)
