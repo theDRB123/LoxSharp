@@ -11,6 +11,7 @@ public class Program
         }
         string output_dir = args[0];
         defineAST(output_dir, "Expr", [
+	    "Assign   : Token name, Expr value",
             "Binary   : Expr Left,Token Operator,Expr Right",
             "Grouping : Expr Expression",
             "Literal  : Object Value",

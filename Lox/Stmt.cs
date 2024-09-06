@@ -4,9 +4,23 @@ public abstract class Stmt
 {
       public interface Visitor<T>
       {
+            T VisitBlockStmt(Block stmt);
             T VisitExpressionStmt(Expression stmt);
             T VisitPrintStmt(Print stmt);
             T VisitVarStmt(Var stmt);
+      }
+      public class Block : Stmt
+      {
+
+            public readonly List<Stmt> statements;
+            public Block(List<Stmt> statements)
+            {
+                  this.statements = statements;
+            }
+            public override T Accept<T>(Visitor<T> visitor)
+            {
+                  return visitor.VisitBlockStmt(this);
+            }
       }
       public class Expression : Stmt
       {

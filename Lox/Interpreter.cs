@@ -21,6 +21,21 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<object>
         }
     }
 
+    private void executeBlock(List<Stmt> statements, Env env){
+        Env previous = this.environment;
+        try{
+            environment = env;
+
+            foreach(var statement in statements){
+                execute(statement);
+            }
+        } catch(Exception err){
+
+        } finally {
+            environment = previous;
+        }
+    }
+    
     private void execute(Stmt stmt)
     {
         stmt.Accept(this);
@@ -167,6 +182,10 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<object>
 
 
     //Statements
+    public object VisitBlockStmt(Stmt.Block stmt){
+        executeBlock(stmt.statements, new Env(environment));
+        return null;
+    }
     public object VisitExpressionStmt(Stmt.Expression stmt)
     {
         evaluate(stmt.expression);
@@ -196,6 +215,4 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<object>
         environment.Define(stmt.name.lexeme, value);
         return null;
     }
-
-
 }

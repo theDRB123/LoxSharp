@@ -2,6 +2,15 @@ using static LoxErrors;
 public class Env
 {
     private readonly Dictionary<string, object> values = [];
+    public readonly Env enclosing;
+
+    public Env(){
+        enclosing = null;
+    }
+
+    public Env(Env env){
+        enclosing = env;
+    }
 
     public void Define(string name, object value)
     {
@@ -14,7 +23,8 @@ public class Env
         {
             return value;
         }
-        return ThrowRuntimeError(name, "Wtf is " + name.lexeme + " huh? TELL ME !!");
+
+        return enclosing != null ? enclosing.Get(name) : ThrowRuntimeError(name, "Wtf is " + name.lexeme + " huh? TELL ME !!");
     }
 
     public object Assign(Token name, object value)
@@ -23,6 +33,7 @@ public class Env
             values[name.lexeme] = value;
             return value;
         }
-        return ThrowRuntimeError(name, "You tried to assign to a non-existing variable lmao");
+
+        return enclosing != null ? enclosing.Assign(name,value) : ThrowRuntimeError(name, "You tried to assign to a non-existing variable lmao");
     }
 }

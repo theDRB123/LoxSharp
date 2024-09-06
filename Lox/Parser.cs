@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Reflection.Metadata;
 using System.Text.RegularExpressions;
 using static TokenType;
@@ -67,7 +68,22 @@ public class Parser
         {
             return printStatement();
         }
+        if (match(LEFT_BRACE)){
+            return new Stmt.Block(block());
+        }
         return expressionStatement();
+    }
+
+    private List<Stmt> block()
+    {
+        List<Stmt> statements = [];
+
+        while(!check(RIGHT_BRACE) && !isAtEnd()){
+            statements.Add(declaration());
+        }
+
+        consume(RIGHT_BRACE, "HEY HEY HEY !! You forgot the '}'");
+        return statements;
     }
 
     private Stmt expressionStatement()
