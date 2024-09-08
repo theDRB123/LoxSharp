@@ -1,10 +1,17 @@
 using static TokenType;
 using static LoxErrors;
+using static LoxControlFlow;
 public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<object>
 {
     public bool isREPL = false;
-    private Env environment = new();
-    private bool breakFlag = false;
+    public readonly Env globals = new();
+    private Env environment;
+    // private bool breakFlag = false;
+    public Interpreter()
+    {
+        globals.Define("clock", new Clock());
+        environment = globals;
+    }
     public void Interpret(List<Stmt> statements)
     {
         foreach (var stmt in statements)
@@ -20,7 +27,7 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<object>
         }
     }
 
-    private void executeBlock(List<Stmt> statements, Env env)
+    public void executeBlock(List<Stmt> statements, Env env)
     {
         Env previous = this.environment;
         try
@@ -29,17 +36,13 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<object>
 
             foreach (var statement in statements)
             {
-                if (breakFlag)
-                {
-                    break;
-                }
                 execute(statement);
             }
         }
         catch (RuntimeError err)
         {
             ThrowRuntimeError(err.token, "Skipping Block | " + err.Message);
-            breakFlag = true;
+            // breakFlag = true;
         }
         finally
         {
@@ -177,9 +180,31 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<object>
 
     public object VisitGroupingExpr(Expr.Grouping expr) => evaluate(expr.Expression);
     public object VisitLiteralExpr(Expr.Literal expr) => stringify(expr.Value);
+    public object VisitCallExpr(Expr.Call expr)
+    {
+        object callee = evaluate(expr.callee);
+
+        List<object> arguements = [];
+        foreach (var arguement in expr.arguements)
+        {
+            arguements.Add(evaluate(arguement));
+        }
+
+        if (callee is not ICallable)
+        {
+            ThrowRuntimeError(expr.paren, "Dude only functions and classes can be called");
+        }
+
+        ICallable function = (ICallable)callee;
+        if (arguements.Count != function.Arity())
+        {
+            ThrowRuntimeError(expr.paren, $"The function wants precisely {function.Arity()} arguement(s), not more not less");
+        }
+        return function.Call(this, arguements);
+    }
     public object VisitUnaryExpr(Expr.Unary expr)
     {
-        Object right = evaluate(expr.right);
+        object right = evaluate(expr.right);
         bool check = checkOperand(right);
         object output = expr.Operator.type switch
         {
@@ -192,7 +217,7 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<object>
     }
     public object VisitVariableExpr(Expr.Variable expr)
     {
-        return stringify(environment.Get(expr.name));
+        return environment.Get(expr.name);
     }
     private bool checkOperand(object right) => right is double;
     private bool checkOperands(object Left, object Right) => Left is double && Right is double;
@@ -261,11 +286,17 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<object>
 
     public object VisitWhileStmt(Stmt.While stmt)
     {
-        while (!breakFlag && isTruty(evaluate(stmt.condition)))
+        while (isTruty(evaluate(stmt.condition)))
         {
-            execute(stmt.body);
+            try
+            {
+                execute(stmt.body);
+            }
+            catch (Break)
+            {
+                break;
+            }
         }
-        breakFlag = false;
         return null;
     }
 
@@ -278,8 +309,32 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<object>
                 ThrowRuntimeError(stmt.type, "you need a loop to have a break ~sun tzu!!");
                 return null;
             }
-            breakFlag = true;
+            else
+            {
+                Break();
+            }
         }
+        return null;
+    }
+
+    public object VisitReturnStmt(Stmt.Return stmt)
+    {
+        if (environment.enclosing == null)
+        {
+            ThrowRuntimeError(stmt.keyword, "I have not place to return to!!");
+            return null;
+        }
+        object value = null;
+        if (stmt.value != null) value = evaluate(stmt.value);
+
+        Return(value);
+        return null;
+    }
+
+    public object VisitFunctionStmt(Stmt.Function stmt)
+    {
+        LoxFunction function = new(stmt, environment);
+        environment.Define(stmt.name.lexeme, function);
         return null;
     }
 }

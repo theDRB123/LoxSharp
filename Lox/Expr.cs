@@ -12,6 +12,7 @@ public interface Visitor<T>
       T VisitLogicalExpr(Logical expr);
       T VisitConditionalExpr(Conditional expr);
       T VisitVariableExpr(Variable expr);
+      T VisitCallExpr(Call expr);
  }
 public class Assign : Expr
  {
@@ -131,6 +132,23 @@ public Variable(Token name)
 public override T Accept<T> (Visitor<T> visitor) 
 {
       return visitor.VisitVariableExpr(this);
+}
+}
+public class Call : Expr
+ {
+
+public readonly Expr callee;
+public readonly Token paren;
+public readonly List<Expr> arguements;
+public Call(Expr callee, Token paren, List<Expr> arguements) 
+ {
+      this.callee = callee;
+      this.paren = paren;
+      this.arguements = arguements;
+}
+public override T Accept<T> (Visitor<T> visitor) 
+{
+      return visitor.VisitCallExpr(this);
 }
 }
 

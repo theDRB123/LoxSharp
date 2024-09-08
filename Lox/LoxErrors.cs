@@ -16,7 +16,7 @@ public static class LoxErrors
 {
     public static bool ThrowParseError(Token token, string message)
     {
-        Lox.error(token, message);
+        Lox.error(token, "ParseError | " + message);
         throw new ParseError();
     }
 
@@ -24,14 +24,40 @@ public static class LoxErrors
     {
         if (Operator.type == PLUS)
         {
-            throw new RuntimeError(Operator, "Go to javaScript if you want to do this shit");
+            throw new RuntimeError(Operator, "RuntimeError | " + "Go to javaScript if you want to do this shit");
         }
-        throw new RuntimeError(Operator, "I dont think you can divide objects..");
+        throw new RuntimeError(Operator, "RuntimeError | " + "dont think you can divide objects..");
     }
 
     public static bool ThrowRuntimeError(Token Operator, string message)
     {
-        throw new RuntimeError(Operator, message);
+        throw new RuntimeError(Operator, "RuntimeError | " + message);
+    }
+
+}
+
+public class Break : Exception { }
+
+public class Return : Exception
+{
+    public readonly object value;
+
+    public Return(object value) : base()
+    {
+        this.value = value;
+    }
+}
+
+public class LoxControlFlow
+{
+    public static bool Break()
+    {
+        throw new Break();
+    }
+
+    public static void Return(object value)
+    {
+        throw new Return(value);
     }
 
 }

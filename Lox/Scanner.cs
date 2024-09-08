@@ -16,7 +16,7 @@ public class Scanner
         { "else", ELSE },
         { "false", FALSE },
         { "for", FOR },
-        { "fun", FUN },
+        { "fn", FUN },
         { "if", IF },
         { "nil", NIL },
         { "or", OR },
@@ -236,7 +236,6 @@ public class Scanner
                         break;
                     }
                 }
-                advance();
             }
             return true;
         }
@@ -250,6 +249,7 @@ public class Scanner
             {
                 advance();
             }
+            return true;
         }
         return false;
     }

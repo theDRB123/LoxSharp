@@ -1,19 +1,22 @@
-var a = 1;
-var b = 0;
-
-print "hello world";
-
-var t = 0;
-while(true)
-{
-    print "hellooo" + t;
-    if(a / b == 10){
-        break;
-    }
-    t = t + 1;
-    a = a * 10;
+/* fn fib(n) {
+  if (n <= 1) return n;
+    return fib(n - 2) + fib(n - 1);
 }
 
-print 5 / 0;
+for (var i = 0; i < 20; i = i + 1) {
+  print fib(i);
+} */
 
-print a;
+fn makeCount(){
+    var i = 0;
+    
+    fn count(){
+        i = i + 1;
+        print i;
+    }
+    return count;
+}
+
+var counter = makeCount();
+counter();
+counter();

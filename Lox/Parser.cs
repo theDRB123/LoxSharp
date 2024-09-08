@@ -32,10 +32,19 @@ public class Parser
     // assignment -> "IDENTIFIER" + assignment | conditional
     // conditional -> equality ( "?" expression ":" conditional )? ;
 
+
+    // declaration  -> fnDeclaration | varDeclaration | statement;
+    //fnDeclaration -> "fn" function;
+    //function      -> IDENTIFIER "(" parameters? ")" block;
+
     private Stmt declaration()
     {
         try
         {
+            if (match(FUN))
+            {
+                return function("function");
+            }
             if (match(VAR))
             {
                 return varDeclaration();
@@ -62,6 +71,28 @@ public class Parser
     }
 
 
+    private Stmt function(string type)
+    {
+        Token name = consume(INDENTIFIER, $"Give a name to the ${type} dum dum");
+        consume(LEFT_PAREN, "Enclose the arguements in '()'");
+        List<Token> parameters = [];
+        if (!check(RIGHT_PAREN))
+        {
+            do
+            {
+                if (parameters.Count >= 255)
+                {
+                    LoxErrors.ThrowParseError(peek(), "I can only have so many arguements with you (255)");
+                }
+
+                parameters.Add(consume(INDENTIFIER, "HEY YOU! GIVE THIS FUNCTION AN ARGUEMENT PLS"));
+            } while (match(COMMA));
+        }
+        consume(RIGHT_PAREN, "dude you forgot to complete the function");
+        consume(LEFT_BRACE, "You need '{' before " + type + "body");
+        List<Stmt> body = block();
+        return new Stmt.Function(name, parameters, body);
+    }
     private Stmt statement()
     {
         if (match(PRINT))
@@ -80,11 +111,17 @@ public class Parser
         {
             return whileStatement();
         }
-        if (match(FOR)){
+        if (match(FOR))
+        {
             return forStatement();
         }
-        if (match(BREAK)){
+        if (match(BREAK))
+        {
             return breakStatement();
+        }
+        if (match(RETURN))
+        {
+            return returnStatement(); 
         }
         return expressionStatement();
     }
@@ -144,49 +181,69 @@ public class Parser
         return new Stmt.While(condition, body);
     }
 
-    private Stmt forStatement(){
+    private Stmt forStatement()
+    {
         consume(LEFT_PAREN, "Uhm, I think you need to have a '(' in For loop");
 
         Stmt inititializer;
-        if(match(SEMICOLON)){
+        if (match(SEMICOLON))
+        {
             inititializer = null;
-        } else if(match(VAR)){
+        }
+        else if (match(VAR))
+        {
             inititializer = varDeclaration();
-        } else {
+        }
+        else
+        {
             inititializer = expressionStatement();
         }
 
         Expr condition = null;
-        if(!check(SEMICOLON)){
+        if (!check(SEMICOLON))
+        {
             condition = expression();
         }
         consume(SEMICOLON, "HEY YOU!! Put a ';' after the loop condition");
 
         Expr increment = null;
-        if(!check(RIGHT_PAREN)){
+        if (!check(RIGHT_PAREN))
+        {
             increment = expression();
         }
         consume(RIGHT_PAREN, "Close the for loop with ')' please");
 
         Stmt body = statement();
-        if(increment != null){
+        if (increment != null)
+        {
             body = new Stmt.Block([body, new Stmt.Expression(increment)]);
         }
-        if(condition != null){
+        if (condition != null)
+        {
             body = new Stmt.While(condition, body);
         }
-        if(inititializer != null){
+        if (inititializer != null)
+        {
             body = new Stmt.Block([inititializer, body]);
         }
         return body;
     }
 
-    private Stmt breakStatement(){
+    private Stmt breakStatement()
+    {
         var token = previous();
         consume(SEMICOLON, "HEY YOU !!, put a semicolon here !!");
         return new Stmt.Break(token);
     }
-
+    private Stmt returnStatement(){
+        Token keyword = previous();
+        Expr value = null;
+        if(!check(SEMICOLON)){
+            value = expression();
+        }
+        consume(SEMICOLON, "Put a semicolon after a return statement");
+        return new Stmt.Return(keyword, value);
+    }
     //expression methods
     private Expr expression()
     {
@@ -317,7 +374,45 @@ public class Parser
             Expr Right = unary();
             return new Expr.Unary(Operator, Right);
         }
-        return primary();
+        return call();
+    }
+
+    private Expr call()
+    {
+        Expr expr = primary();
+
+        while (true)
+        {
+            if (match(LEFT_PAREN))
+            {
+                expr = finishCall(expr);
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        return expr;
+    }
+
+    private Expr finishCall(Expr callee)
+    {
+        List<Expr> arguements = [];
+        if (!check(RIGHT_PAREN))
+        {
+            do
+            {
+                if (arguements.Count >= 255)
+                {
+                    LoxErrors.ThrowParseError(peek(), "Can't deal with so many arguements limit it to 255 pls");
+                }
+                arguements.Add(expression());
+            } while (match(COMMA));
+        }
+        Token paren = consume(RIGHT_PAREN, "HEY! Add the ')' after the arguement idiot");
+
+        return new Expr.Call(callee, paren, arguements);
     }
 
     private Expr primary()

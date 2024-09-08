@@ -4,23 +4,24 @@
 program -> declaration* EOF;
 
 
-declaration -> varDecl
-             | statement ;
-
-varDecl -> "var" IDENTIFIER ( "=" expression )? ";" ;
+declaration -> funDecl
+            | varDecl
+            | statement ;
 
 statement -> exprStmt
            | printStmt;
            | block ;
            | ifStmt;
            | whileStmt;
-
+           | breakStmt;
+           | returnStmt;
 
 block       -> "{" declaration* "}" ;
 exprStmt    -> expression ";" ;
 printStmt   -> "print" expression ";" ;
 ifStmt      -> "if" "(" expression ")" statement ( "else" statement )? ;
 whileStmt   -> "while" "(" expression ")" statement ;
+returnStmt  -> "return" expression? ";" 
 
 expression  -> assignment;
 assignment  -> IDENTIFIER "=" assignment 
@@ -32,8 +33,10 @@ equality    -> comparison ( ( "!=" | "==" ) comparison )* ;
 comparison  -> term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
 term        -> factor ( ( "-" | "+" ) factor )* ;
 factor      -> unary ( ( "/" | "*" ) unary )* ;
-unary       -> ( "!" | "-" | "--" | "++" ) unary
+unary       -> ( "!" | "-" | "--" | "++" ) unary | call
             | postfix ;
+call        -> primary('('arguements?')')*;
+arguements  -> expression (',' expression)*;
 postfix     -> primary ( "--" | ++" )* ;
 primary     -> NUMBER | STRING | "true" | "false" | "nil"
             | "(" expression ")"
