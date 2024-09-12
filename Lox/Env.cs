@@ -1,3 +1,4 @@
+using System.Net;
 using static LoxErrors;
 public class Env
 {
@@ -27,6 +28,9 @@ public class Env
         return enclosing != null ? enclosing.Get(name) : ThrowRuntimeError(name, "Wtf is " + name.lexeme + " huh? TELL ME !!");
     }
 
+    public object GetAt(int distance, string name){
+        return Ancestor(distance).values[name]; 
+    }
     public object Assign(Token name, object value)
     {
         if (values.TryGetValue(name.lexeme, out _)){
@@ -35,5 +39,17 @@ public class Env
         }
 
         return enclosing != null ? enclosing.Assign(name,value) : ThrowRuntimeError(name, "You tried to assign to a non-existing variable lmao");
+    }
+
+    public void AssignAt(int distance, Token name, object value){
+        Ancestor(distance).values[name.lexeme] = value;     
+    }
+
+    public Env Ancestor(int distance){
+        Env env = this;
+        for(int i = 0; i < distance; i++){
+            env = env.enclosing;
+        }
+        return env;
     }
 }

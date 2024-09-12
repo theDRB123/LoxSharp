@@ -187,6 +187,7 @@ public class Scanner
         }
         if (CommentLine())
         {
+            line++;
             return true;
         }
         return false;
@@ -214,7 +215,11 @@ public class Scanner
                         };
                         break;
                     case '*':
-                        
+                        break;
+
+                    case '\n':
+                        line++;
+                        break;        
                     default:
                         break;
                 }

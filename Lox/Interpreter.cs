@@ -7,6 +7,7 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<object>
     public readonly Env globals = new();
     private Env environment;
     // private bool breakFlag = false;
+    private readonly Dictionary<Expr, int> locals = [];
     public Interpreter()
     {
         globals.Define("clock", new Clock());
@@ -22,7 +23,7 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<object>
             }
             catch (RuntimeError error)
             {
-                Lox.runtimeError(error);
+                // Lox.runtimeError(error);
             }
         }
     }
@@ -55,6 +56,11 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<object>
         stmt.Accept(this);
     }
 
+    public void Resolve(Expr expr, int depth)
+    {
+        locals[expr] = depth;
+    }
+
     private object stringify(object value)
     {
         if (value == null) return null;
@@ -69,7 +75,10 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<object>
     public object VisitAssignExpr(Expr.Assign expr)
     {
         object value = evaluate(expr.value);
-        environment.Assign(expr.name, value);
+        if(locals.TryGetValue(expr, out int distance)){
+            environment.AssignAt(distance, expr.name, value);
+        }
+        globals.Assign(expr.name, value);
         return value;
     }
     public object VisitLogicalExpr(Expr.Logical expr)
@@ -217,7 +226,14 @@ public class Interpreter : Expr.Visitor<Object>, Stmt.Visitor<object>
     }
     public object VisitVariableExpr(Expr.Variable expr)
     {
-        return environment.Get(expr.name);
+        return LookUpVariable(expr.name, expr);
+    }
+
+    private object LookUpVariable(Token name, Expr expr){
+        if(locals.TryGetValue(expr, out int distance)){
+            return environment.GetAt(distance, name.lexeme);
+        }
+        return globals.Get(name);
     }
     private bool checkOperand(object right) => right is double;
     private bool checkOperands(object Left, object Right) => Left is double && Right is double;

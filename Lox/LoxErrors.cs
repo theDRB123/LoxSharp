@@ -11,6 +11,7 @@ public class RuntimeError : Exception
 }
 
 public class ParseError : Exception { }
+public class ResolverError : Exception { }
 
 public static class LoxErrors
 {
@@ -32,6 +33,12 @@ public static class LoxErrors
     public static bool ThrowRuntimeError(Token Operator, string message)
     {
         throw new RuntimeError(Operator, "RuntimeError | " + message);
+    }
+
+    public static bool ThrowResolverError(Token token, string message)
+    {
+        Lox.error(token, "ResolverError | " + message);
+        throw new ResolverError();
     }
 
 }
